@@ -33,18 +33,14 @@ class LoginForm(AuthenticationForm):
 
 
 class PasswordResetForm(DjangoPasswordResetForm):
-    email = forms.EmailField(
-        label=gettext_lazy("Enter your email address to reset your password"),
-        max_length=254,
-        required=True,
-    )
+    email = forms.EmailField(max_length=254, widget=forms.EmailInput())
 
-    @property
-    def extra_fields(self):
-        for field_name in self.fields.keys():
-            if field_name not in ["email"]:
-                yield field_name, self[field_name]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].widget.attrs["placeholder"] = gettext_lazy("Enter your email address")
+        self.fields["email"].widget.attrs["autofocus"] = ""
 
+    
 
 class PasswordChangeForm(DjangoPasswordChangeForm):
     """
