@@ -34,20 +34,22 @@ class Command(BaseCommand):
         return "[" + ", ".join(map(str, numberlist)) + "]"
 
     def handle(self, **options):
-        any_page_problems_fixed = False
-        for page in Page.objects.all():
-            try:
-                page.specific
-            except page.specific_class.DoesNotExist:
-                self.stdout.write(
-                    "Page %d (%s) is missing a subclass record; deleting."
-                    % (page.id, page.title)
-                )
-                any_page_problems_fixed = True
-                page.delete()
+        def handle(self, **options):
+            interactive = options["interactive"]
+        full = options["full"]
 
-        self.handle_model(Page, "page", "pages", any_page_problems_fixed, options)
-        self.handle_model(Collection, "collection", "collections", False, options)
+        if not interactive:
+            self.fix_orphans = self.fix_orphans_silent
+        else:
+            self.fix_orphans = self.fix_orphans_interactive
+
+        if full:
+            self.fix_paths = self.fix_paths_full
+        else:
+            self.fix_paths = self.fix_paths_fast
+
+        self.fix_paths()
+        self.fix_orphans()
 
     def handle_model(
         self, model, model_name, model_name_plural, any_problems_fixed, options

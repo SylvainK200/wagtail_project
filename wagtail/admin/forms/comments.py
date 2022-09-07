@@ -49,20 +49,14 @@ class CommentForm(WagtailAdminModelForm):
             self.instance.user = user
         elif self.instance.user != user:
             # trying to edit someone else's comment
-            if (
-                any(
-                    field
-                    for field in self.changed_data
-                    if field not in ["resolved", "position", "contentpath"]
-                )
-                or cleaned_data["contentpath"].split(".")[0]
-                != self.instance.contentpath.split(".")[0]
-            ):
-                # users can resolve each other's base comments and change their positions within a field, or move a comment between blocks in a StreamField
+            if any(field for field in self.changed_data):
+                # includes DELETION_FIELD_NAME, as users cannot delete each other's individual comments
+                # if deleting a whole thread, this should be done by deleting the parent PageComment instead
                 self.add_error(
                     None, ValidationError(_("You cannot edit another user's comment."))
                 )
         return cleaned_data
+        
 
     def save(self, *args, **kwargs):
         if self.cleaned_data.get("resolved", False):

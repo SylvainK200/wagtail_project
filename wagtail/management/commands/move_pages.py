@@ -11,21 +11,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Get pages
-        from_page = Page.objects.get(pk=options["from_id"])
-        to_page = Page.objects.get(pk=options["to_id"])
-        pages = from_page.get_children()
+        from_page = Page.objects.get(id=options["from_id"])
+        to_page = Page.objects.get(id=options["to_id"])
 
-        # Move the pages
+        # Move pages
+        from_page.move(to_page, pos="last-child")
         self.stdout.write(
-            "Moving "
-            + str(len(pages))
-            + ' pages from "'
-            + from_page.title
-            + '" to "'
-            + to_page.title
-            + '"'
+            self.style.SUCCESS(
+                "Moved page '%s' (id %d) to '%s' (id %d)"
+                % (from_page.title, from_page.id, to_page.title, to_page.id)
+            )
         )
-        for page in pages:
-            page.move(to_page, pos="last-child")
-
-        self.stdout.write("Done")
