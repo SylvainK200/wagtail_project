@@ -130,18 +130,11 @@ class PagesAdminAPIViewSet(PagesAPIViewSet):
         return response
 
     def action_view(self, request, pk, action_name):
-        instance = self.get_object()
-
         if action_name not in self.actions:
-            raise Http404(f"unrecognised action '{action_name}'")
+            raise Http404
 
-        action = self.actions[action_name](self, request)
-        action_data = action.serializer(data=request.data)
-
-        if not action_data.is_valid():
-            return Response(action_data.errors, status=400)
-
-        return action.execute(instance, action_data.data)
+        action = self.actions[action_name](self)
+        return action(request, pk)
 
     @classmethod
     def get_urlpatterns(cls):
